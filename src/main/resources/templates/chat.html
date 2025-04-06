@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+    <script src="js/bootstrap.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .alert {
+            margin-top: 20px;
+        }
+
+        /* Fullscreen overlay for blocking input */
+        #overlay {
+            display: none; /* Hidden by default */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Black with opacity */
+            z-index: 1000;
+        }
+
+        /* Centered spinner */
+        #spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 12px solid #f3f3f3; /* Light grey */
+            border-top: 12px solid #007bff; /* Bootstrap primary blue */
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .row {
+            margin-bottom: 20px;
+        }
+
+        .message {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background-color: #f8f9fa;
+        }
+
+        .message b {
+            color: #007bff;
+        }
+
+        .image img {
+            max-width: 150px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        /* Modal for Image Display */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1050;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        .modal-content {
+            margin: auto;
+            display: block;
+            max-width: 80%;
+            height: auto;
+        }
+
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 25px;
+            color: white;
+            font-size: 35px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+    <title>Cognitive Behaviour Therapy (CBT) Chat</title>
+</head>
+<body>
+
+<!-- Fullscreen overlay -->
+<div id="overlay">
+    <div id="spinner"></div>
+</div>
+
+<div class="container">
+    <h1 class="text-center">Cognitive Behaviour Therapy (CBT) Chat</h1>
+
+    <!-- Error Alert -->
+    <div class="alert alert-danger" role="alert" th:if="${error}">
+        <p th:text="${errorMessage}">An unexpected error occurred. Please try again later.</p>
+    </div>
+
+    <form id="chat-form" action="#" method="POST" th:action="@{/chat}" th:object="${chatMessageDTO}">
+        <div class="form-group">
+            <label for="messageText"><strong>Message Text:</strong></label>
+            <input id="messageText" th:field="*{messageText}" type="text" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="messageType"><strong>Message Type:</strong></label>
+            <select id="messageType" th:field="*{messageType}" class="form-control">
+                <option
+                        th:each="type : ${allMessageTypes}"
+                        th:text="${type}"
+                        th:value="${type}">
+                    Say
+                </option>
+            </select>
+        </div>
+        <button id="submit-button" type="submit" class="btn btn-primary btn-block">Send</button>
+    </form>
+
+    <a id="logout-link" th:href="@{/logout}" class="btn btn-secondary mt-3">Logout</a>
+
+    <div class="container mt-5">
+        <div class="row" th:each="chatMessage, iterStatus : ${chatMessages}">
+            <!-- Message Column -->
+            <div class="col-md-6 message">
+                <b th:text="${chatMessage.username}">Username</b>:
+                <span th:text="${chatMessage.messageText}">Hello, world!</span>
+            </div>
+
+            <!-- Image Column -->
+            <div class="col-md-6 image">
+                <img th:if="${chatImages[iterStatus.index] != null}"
+                     th:src="@{${chatImages[iterStatus.index].url}}"
+                     th:alt="${chatImages[iterStatus.index].description}"
+                     class="img-thumbnail"
+                     onclick="openModal(this.src)">
+                <p th:if="${chatImages[iterStatus.index] == null}" class="text-muted">No image available</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Image Display -->
+<div id="imageModal" class="modal">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <img class="modal-content" id="modalImage">
+</div>
+
+<script>
+    const form = document.getElementById('chat-form');
+    const overlay = document.getElementById('overlay');
+    const modal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+
+    // Show spinner on form submit
+    form.addEventListener('submit', function () {
+        overlay.style.display = 'block';
+    });
+
+    // Hide spinner after page reload
+    window.addEventListener('load', function () {
+        overlay.style.display = 'none';
+    });
+
+    // Open the image modal
+    function openModal(src) {
+        modal.style.display = 'block';
+        modalImage.src = src;
+    }
+
+    // Close the image modal
+    function closeModal() {
+        modal.style.display = 'none';
+    }
+</script>
+</body>
+</html>
